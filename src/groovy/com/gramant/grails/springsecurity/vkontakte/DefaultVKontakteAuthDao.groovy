@@ -1,4 +1,4 @@
-package com.the6hours.grails.springsecurity.facebook
+package com.gramant.grails.springsecurity.vkontakte
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.authority.GrantedAuthorityImpl
@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
  * @since 28.10.11
  * @author Igor Artamonov (http://igorartamonov.com)
  */
-class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBean, ApplicationContextAware, GrailsApplicationAware {
+class DefaultVKontakteAuthDao implements VKontakteAuthDao<Object>, InitializingBean, ApplicationContextAware, GrailsApplicationAware {
 
     private static def log = Logger.getLogger(this)
 
@@ -30,14 +30,14 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
     String connectionPropertyName
     String userDomainClassName
     String rolesPropertyName
-    List<String> defaultRoleNames = ['ROLE_USER', 'ROLE_FACEBOOK']
+    List<String> defaultRoleNames = ['ROLE_USER', 'ROLE_VKONTAKTE']
 
-    def facebookAuthService
+    def vkontakteAuthService
     DomainsRelation domainsRelation = DomainsRelation.JoinedUser
 
-    Object getFacebookUser(Object user) {
-        if (facebookAuthService && facebookAuthService.respondsTo('getFacebookUser', user.class)) {
-            return facebookAuthService.getFacebookUser(user)
+    Object getVKontakteUser(Object user) {
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('getVKontakteUser', user.class)) {
+            return vkontakteAuthService.getVKontakteUser(user)
         }
         if (domainsRelation == DomainsRelation.JoinedUser) {
             return user?.getAt(connectionPropertyName)// load the User object to memory prevent LazyInitializationException
@@ -50,8 +50,8 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
     }
 
     Object findUser(long uid) {
-        if (facebookAuthService && facebookAuthService.respondsTo('findUser', Long)) {
-            return facebookAuthService.findUser(uid)
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('findUser', Long)) {
+            return vkontakteAuthService.findUser(uid)
         }
 		Class<?> User = grailsApplication.getDomainClass(domainClassName)?.clazz
         if (!User) {
@@ -62,17 +62,17 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
         User.withTransaction { status ->
             user = User.findWhere(uid: uid)
             if (user
-                    && !(facebookAuthService && facebookAuthService.respondsTo('getFacebookUser', user.class))
+                    && !(vkontakteAuthService && vkontakteAuthService.respondsTo('getVKontakteUser', user.class))
                     && domainsRelation == DomainsRelation.JoinedUser) {
-                getFacebookUser(user) // load the User object to memory prevent LazyInitializationException
+                getVKontakteUser(user) // load the User object to memory prevent LazyInitializationException
             }
         }
         return user
     }
 
-    Object create(FacebookAuthToken token) {
-        if (facebookAuthService && facebookAuthService.respondsTo('create', FacebookAuthToken)) {
-            return facebookAuthService.create(token)
+    Object create(VKontakteAuthToken token) {
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('create', VKontakteAuthToken)) {
+            return vkontakteAuthService.create(token)
         }
 
         def securityConf = SpringSecurityUtils.securityConfig
@@ -94,8 +94,8 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
 
         def appUser
         if (domainsRelation == DomainsRelation.JoinedUser) {
-            if (facebookAuthService && facebookAuthService.respondsTo('createAppUser', UserClass, FacebookAuthToken)) {
-                appUser = facebookAuthService.createAppUser(user, token)
+            if (vkontakteAuthService && vkontakteAuthService.respondsTo('createAppUser', UserClass, VKontakteAuthToken)) {
+                appUser = vkontakteAuthService.createAppUser(user, token)
             } else {
                 Class<?> UserDomainClass = grailsApplication.getDomainClass(userDomainClassName).clazz
                 if (!UserDomainClass) {
@@ -103,10 +103,10 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
                     return null
                 }
                 appUser = UserDomainClass.newInstance()
-                if (facebookAuthService && facebookAuthService.respondsTo('prepopulateAppUser', UserDomainClass, FacebookAuthToken)) {
-                    facebookAuthService.prepopulateAppUser(appUser, token)
+                if (vkontakteAuthService && vkontakteAuthService.respondsTo('prepopulateAppUser', UserDomainClass, VKontakteAuthToken)) {
+                    vkontakteAuthService.prepopulateAppUser(appUser, token)
                 } else {
-                    appUser[securityConf.userLookup.usernamePropertyName] = "facebook_$token.uid"
+                    appUser[securityConf.userLookup.usernamePropertyName] = "vkontakte_$token.uid"
                     appUser[securityConf.userLookup.passwordPropertyName] = token.accessToken.accessToken
                     appUser[securityConf.userLookup.enabledPropertyName] = true
                     appUser[securityConf.userLookup.accountExpiredPropertyName] = false
@@ -120,20 +120,20 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
             user[connectionPropertyName] = appUser
         }
 
-        if (facebookAuthService && facebookAuthService.respondsTo('onCreate', UserClass, token)) {
-            facebookAuthService.onCreate(user, token)
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('onCreate', UserClass, token)) {
+            vkontakteAuthService.onCreate(user, token)
         }
 
         UserClass.withTransaction {
             user.save(flush: true, failOnError: true)
         }
 
-        if (facebookAuthService && facebookAuthService.respondsTo('afterCreate', UserClass, token)) {
-            facebookAuthService.afterCreate(user, token)
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('afterCreate', UserClass, token)) {
+            vkontakteAuthService.afterCreate(user, token)
         }
 
-        if (facebookAuthService && facebookAuthService.respondsTo('createRoles', UserClass)) {
-            facebookAuthService.createRoles(user)
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('createRoles', UserClass)) {
+            vkontakteAuthService.createRoles(user)
         } else {
             Class<?> PersonRole = grailsApplication.getDomainClass(securityConf.userLookup.authorityJoinClassName).clazz
             Class<?> Authority = grailsApplication.getDomainClass(securityConf.authority.className).clazz
@@ -155,8 +155,8 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
     }
 
     Object getPrincipal(Object user) {
-        if (facebookAuthService && facebookAuthService.respondsTo('getPrincipal', user.class)) {
-            return facebookAuthService.getPrincipal(user)
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('getPrincipal', user.class)) {
+            return vkontakteAuthService.getPrincipal(user)
         }
         if (domainsRelation == DomainsRelation.JoinedUser) {
             return user[connectionPropertyName]
@@ -165,8 +165,8 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
     }
 
     Collection<GrantedAuthority> getRoles(Object user) {
-        if (facebookAuthService && facebookAuthService.respondsTo('getRoles', user.class)) {
-            return facebookAuthService.getRoles(user)
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('getRoles', user.class)) {
+            return vkontakteAuthService.getRoles(user)
         }
 
         if (UserDetails.isAssignableFrom(user.class)) {
@@ -198,42 +198,46 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
         }
     }
 
+    /**
+     * @param user VK user
+     * @return
+     */
     Boolean hasValidToken(Object user) {
-        if (facebookAuthService && facebookAuthService.respondsTo('hasValidToken', user.class)) {
-            return facebookAuthService.hasValidToken(user)
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('hasValidToken', user.class)) {
+            return vkontakteAuthService.hasValidToken(user)
         }
-        def facebookUser = getFacebookUser(user)
-        if (facebookUser.properties.containsKey('accessToken')) {
-            if (facebookUser.accessToken == null) {
+        def vkUser = user //getVKontakteUser(user)
+        if (vkUser.properties.containsKey('accessToken')) {
+            if (vkUser.accessToken == null) {
                 return false
             }
         }
-        if (facebookUser.properties.containsKey('accessTokenExpires')) {
-            if (facebookUser.accessTokenExpires == null) {
+        if (vkUser.properties.containsKey('accessTokenExpires')) {
+            if (vkUser.accessTokenExpires == null) {
                 return false
             }
             Date goodExpiration = new Date(System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(4))
-            if (goodExpiration.after(facebookUser.accessTokenExpires)) {
+            if (goodExpiration.after(vkUser.accessTokenExpires)) {
                 return false
             }
         } else {
-            log.warn("Domain ${facebookUser.class} don't have 'acccessTokenExpires' field, can't check accessToken expiration")
+            log.warn("Domain ${vkUser.class} don't have 'acccessTokenExpires' field, can't check accessToken expiration")
         }
         return true //not supported currently
     }
 
-    void updateToken(Object user, FacebookAuthToken token) {
-        if (facebookAuthService && facebookAuthService.respondsTo('updateToken', user.class, token.class)) {
-            facebookAuthService.updateToken(user, token)
+    void updateToken(Object user, VKontakteAuthToken token) {
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('updateToken', user.class, token.class)) {
+            vkontakteAuthService.updateToken(user, token)
             return
         }
         log.debug("Update access token to $token")
-        def facebookUser = getFacebookUser(user)
-        if (facebookUser.properties.containsKey('accessToken')) {
-            facebookUser.accessToken = token.accessToken.accessToken
+        def vkUser = getVKontakteUser(user)
+        if (vkUser.properties.containsKey('accessToken')) {
+            vkUser.accessToken = token.accessToken.accessToken
         }
-        if (facebookUser.properties.containsKey('accessTokenExpires')) {
-            facebookUser.accessTokenExpires = token.accessToken.expireAt
+        if (vkUser.properties.containsKey('accessTokenExpires')) {
+            vkUser.accessTokenExpires = token.accessToken.expireAt
         }
         Class<?> UserClass = grailsApplication.getDomainClass(domainClassName)?.clazz
         if (!UserClass) {
@@ -241,34 +245,34 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
             return
         }
         UserClass.withTransaction {
-            facebookUser.save()
+            vkUser.save()
         }
     }
 
     String getAccessToken(Object user) {
-        if (facebookAuthService && facebookAuthService.respondsTo('getAccessToken', user.class)) {
-            return facebookAuthService.getAccessToken(user)
+        if (vkontakteAuthService && vkontakteAuthService.respondsTo('getAccessToken', user.class)) {
+            return vkontakteAuthService.getAccessToken(user)
         }
-        def facebookUser = getFacebookUser(user)
-        if (facebookUser.properties.containsKey('accessToken')) {
-            return facebookUser.accessToken
+        def vkUser = user //getVKontakteUser(user)
+        if (vkUser.properties.containsKey('accessToken')) {
+            return vkUser.accessToken
         }
         return null
     }
 
     void afterPropertiesSet() {
-        if (!facebookAuthService) {
-            if (applicationContext.containsBean('facebookAuthService')) {
-                log.debug("Use provided facebookAuthService")
-                facebookAuthService = applicationContext.getBean('facebookAuthService')
+        if (!vkontakteAuthService) {
+            if (applicationContext.containsBean('vkontakteAuthService')) {
+                log.debug("Use provided vkontakteAuthService")
+                vkontakteAuthService = applicationContext.getBean('vkontakteAuthService')
             }
         }
 
         //validate configuration
 
         List serviceMethods = []
-        if (facebookAuthService) {
-            facebookAuthService.metaClass.methods.each {
+        if (vkontakteAuthService) {
+            vkontakteAuthService.metaClass.methods.each {
                 serviceMethods<< it.name
             }
         }
@@ -280,17 +284,17 @@ class DefaultFacebookAuthDao implements FacebookAuthDao<Object>, InitializingBea
                 if (!conf.userLookup.authorityJoinClassName) {
                     log.error("Don't have authority join class configuration. Please configure 'grails.plugins.springsecurity.userLookup.authorityJoinClassName' value")
                 } else if (!grailsApplication.getDomainClass(conf.userLookup.authorityJoinClassName)) {
-                    log.error("Can't find authority join class (${conf.userLookup.authorityJoinClassName}). Please configure 'grails.plugins.springsecurity.userLookup.authorityJoinClassName' value, or create your own 'List<GrantedAuthority> facebookAuthService.getRoles(user)'")
+                    log.error("Can't find authority join class (${conf.userLookup.authorityJoinClassName}). Please configure 'grails.plugins.springsecurity.userLookup.authorityJoinClassName' value, or create your own 'List<GrantedAuthority> vkontakteAuthService.getRoles(user)'")
                 }
             }
         }
         if (!serviceMethods.contains('findUser')) {
             if (!domainClassName) {
-                log.error("Don't have facebook user class configuration. Please configure 'grails.plugins.springsecurity.facebook.domain.classname' value")
+                log.error("Don't have VKontakte user class configuration. Please configure 'grails.plugins.springsecurity.vkontakte.domain.classname' value")
             } else {
                 Class<?> User = grailsApplication.getDomainClass(domainClassName)?.clazz
                 if (!User) {
-                    log.error("Can't find facebook user class ($domainClassName). Please configure 'grails.plugins.springsecurity.facebook.domain.classname' value, or create your own 'Object facebookAuthService.findUser(long)'")
+                    log.error("Can't find VKontakte user class ($domainClassName). Please configure 'grails.plugins.springsecurity.vkontakte.domain.classname' value, or create your own 'Object vkontakteAuthService.findUser(long)'")
                 }
             }
         }

@@ -1,4 +1,4 @@
-package com.the6hours.grails.springsecurity.facebook
+package com.gramant.grails.springsecurity.vkontakte
 
 /**
  * 

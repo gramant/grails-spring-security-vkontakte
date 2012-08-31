@@ -1,8 +1,8 @@
 println '''
 *********************************************************************
-* You've installed the Spring Security Facebook plugin.             *
+* You've installed the Spring Security VKontakte plugin.             *
 *                                                                   *
-* Next run the "grails s2-init-facebook" script to configure plugin.*
+* Next run the "grails s2-init-vkontakte" script to configure plugin.*
 *                                                                   *
 *********************************************************************
 '''

@@ -1,20 +1,23 @@
-package com.the6hours.grails.springsecurity.facebook
+package com.gramant.grails.springsecurity.vkontakte
 
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.Authentication
 import org.springframework.security.authentication.AbstractAuthenticationToken
 
-public class FacebookAuthToken extends AbstractAuthenticationToken implements Authentication {
+/**
+ * Initially we only know user id (uid).
+ */
+public class VKontakteAuthToken extends AbstractAuthenticationToken implements Authentication {
 	
 	long uid
-    FacebookAccessToken accessToken
+    VKontakteAccessToken accessToken
     String code
 
     Object principal
 	
 	Collection<GrantedAuthority> authorities
 	
-	def FacebookAuthToken() {
+	def VKontakteAuthToken() {
 		super([] as Collection<GrantedAuthority>);
 	}	
 

@@ -6,19 +6,19 @@ includeTargets << grailsScript('_GrailsBootstrap')
 
 overwriteAll = false
 templateAttributes = [:]
-templateDir = "$springSecurityFacebookPluginDir/src/templates"
-resourceDir = "$springSecurityFacebookPluginDir/src/resources"
-pluginAppDir = "$springSecurityFacebookPluginDir/grails-app"
+templateDir = "$springSecurityVkontaktePluginDir/src/templates"
+resourceDir = "$springSecurityVkontaktePluginDir/src/resources"
+pluginAppDir = "$springSecurityVkontaktePluginDir/grails-app"
 appDir = "$basedir/grails-app"
 webDir = "$basedir/web-app"
 templateEngine = new SimpleTemplateEngine()
 pluginConfig = [:]
 beans = []
 
-target(s2InitFacebook: 'Initializes Twitter artifacts for the Spring Security Facebook plugin') {
+target(s2InitVkontakte: 'Initializes artifacts for the Spring Security VKontakte plugin') {
 	depends(checkVersion, configureProxy, packageApp, classpath)
 
-    def configFile = new File("$springSecurityFacebookPluginDir/grails-app/conf/DefaultFacebookSecurityConfig.groovy")
+    def configFile = new File("$springSecurityVkontaktePluginDir/grails-app/conf/DefaultVKontakteSecurityConfig.groovy")
 	if (configFile.exists()) {
         def conf = new ConfigSlurper().parse(configFile.text)
         println "Creating app based on configuration:"
@@ -26,7 +26,7 @@ target(s2InitFacebook: 'Initializes Twitter artifacts for the Spring Security Fa
 		//    println "$name = ${config.flatten()}"
         //}
 
-        pluginConfig = conf.security.facebook
+        pluginConfig = conf.security.vkontakte
         //pluginConfig.each { name, config ->
 		//    println "$name = $config"
         //}
@@ -49,12 +49,12 @@ private void fillConfig() {
 
     String code
 
-    code = "facebook.appId"
-    ant.input(message: "Enter your Facebook App ID", addproperty: code)
+    code = "vkontakte.appId"
+    ant.input(message: "Enter your VKontakte App ID", addproperty: code)
     config['appId'] = ant.antProject.properties[code]
 
-    code = "facebook.secret"
-    ant.input(message: "Enter your Facebook App Secret", addproperty: code)
+    code = "vkontakte.secret"
+    ant.input(message: "Enter your VKontakte App Secret", addproperty: code)
     config['secret'] = ant.antProject.properties[code]
 
     def configFile = new File(appDir, 'conf/Config.groovy')
@@ -62,7 +62,7 @@ private void fillConfig() {
         configFile.withWriterAppend {
             it.writeLine "\n"
             config.entrySet().each { Map.Entry conf ->
-                it.writeLine "grails.plugins.springsecurity.facebook.$conf.key='$conf.value'"
+                it.writeLine "grails.plugins.springsecurity.vkontakte.$conf.key='$conf.value'"
             }
         }
     }
@@ -90,16 +90,16 @@ private void configure() {
 
 private void copyData() {
 
-    ant.input(message: "Do you already have FacebookUser domain? 'N' - if not, it will be created (Y/N):",
-            addproperty: 'create.facebookdomain',
+    ant.input(message: "Do you already have VKontakteUser domain? 'N' - if not, it will be created (Y/N):",
+            addproperty: 'create.vkontaktedomain',
             defaultvalue: 'N')
 
-    if (ant.antProject.properties['create.facebookdomain'].toLowerCase() == 'n') {
-        ant.input(message: "Enter name of FacebookUser domain class that will be created for you",
-                addproperty: 'facebookdomain',
-                defaultvalue: 'FacebookUser')
+    if (ant.antProject.properties['create.vkontaktedomain'].toLowerCase() == 'n') {
+        ant.input(message: "Enter name of VKontakteUser domain class that will be created for you",
+                addproperty: 'vkontaktedomain',
+                defaultvalue: 'VKontakteUser')
 
-        templateAttributes['domainClassFullName'] = ant.antProject.properties['facebookdomain']
+        templateAttributes['domainClassFullName'] = ant.antProject.properties['vkontaktedomain']
         def dbUserDomain = splitClassName(templateAttributes['domainClassFullName'])
         templateAttributes['domainPackage'] = dbUserDomain[0]
         templateAttributes['domainPackageDeclaration'] = ''
@@ -112,31 +112,31 @@ private void copyData() {
             domainDir += '/'
         }
 
-        generateFile "$templateDir/FacebookUser.groovy.template",
+        generateFile "$templateDir/VKontakteUser.groovy.template",
                      "$basedir/grails-app/domain/${domainDir}${templateAttributes.domainClassName}.groovy"
         pluginConfig.domain.classname = templateAttributes['domainClassFullName']
-    } else if (ant.antProject.properties['create.facebookdomain'].toLowerCase() == 'y') {
+    } else if (ant.antProject.properties['create.vkontaktedomain'].toLowerCase() == 'y') {
         ant.input(message: "Existing domain name:",
-                addproperty: 'create.facebookdomainname',
+                addproperty: 'create.vkontaktedomainname',
                 defaultvalue: pluginConfig.domain.classname)
 
-        templateAttributes['domainClassFullName'] = ant.antProject.properties['create.facebookdomainname']
+        templateAttributes['domainClassFullName'] = ant.antProject.properties['create.vkontaktedomainname']
         def dbUserDomain = splitClassName(templateAttributes['domainClassFullName'])
         templateAttributes['domainPackage'] = dbUserDomain[0]
         templateAttributes['domainClassName'] = dbUserDomain[1]
 
         pluginConfig.domain.classname = templateAttributes['domainClassFullName']
     } else {
-        ant.echo(message: "Skip FacebookUser domain configuration")
+        ant.echo(message: "Skip VKontakteUser domain configuration")
     }
 }
 
 generateDao = {
-    generateFile "$templateDir/FacebookAuthDaoImpl.groovy.template",
+    generateFile "$templateDir/VKontakteAuthDaoImpl.groovy.template",
                  "$basedir/src/groovy/${templateAttributes.daoClassName}.groovy"
     ant.echo message: ""
     ant.echo message: "I'v added `$appDir/src/groovy/${templateAttributes.daoClassName}.groovy` file"
-    ant.echo message: "You need to implement all methods there, to start using Facebook Auth"
+    ant.echo message: "You need to implement all methods there, to start using VKontakte Auth"
     ant.echo message: ""
 
     beans << generateBeanStr(templateAttributes['bean.dao'], templateAttributes['daoClassName'], [:])
@@ -279,4 +279,4 @@ private void addBeans(List<String> beans) {
 }
 
 
-setDefaultTarget 's2InitFacebook'
+setDefaultTarget 's2InitVkontakte'

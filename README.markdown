@@ -1,12 +1,13 @@
-Facebook Auth plugin for Grails
+VKontakte Auth plugin for Grails
 ===============================
 
-Grails plugin for Facebook Authentication, as extension to [Grails Spring Security Core plugin](http://www.grails.org/plugin/spring-security-core)
+Grails plugin for VKontakte Authentication, as extension to [Grails Spring Security Core plugin](http://www.grails.org/plugin/spring-security-core)
+The code is based on Facebook plugin, with some VK-specific issues resolved.
 
 Requirements
 ------------
 
- * grails 1.3.7
+ * grails 2.0+
  * spring-security-core plugin 1.1+
 
 How to install
@@ -23,7 +24,7 @@ Configure spring-security
 And then install this plugin:
 
 ```
-grails install-plugin spring-security-facebook
+grails install-plugin spring-security-vkontakte
 ```
 
 Done
@@ -32,6 +33,7 @@ How to use
 ----------
 
 For documentation see: <a href="http://grails.org/plugin/spring-security-facebook">http://grails.org/plugin/spring-security-facebook</a>
+(no VK documentation yet...)
 
 Examples:
 
@@ -40,4 +42,4 @@ Examples:
 Questions?
 ----------
 
-Have any questions? Contact me: igor@artamonov.ru
+Have any questions? Contact me: nekoval@yandex.ru

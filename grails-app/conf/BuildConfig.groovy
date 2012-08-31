@@ -1,57 +1,61 @@
 grails.project.class.dir = 'target/classes'
 grails.project.test.class.dir = 'target/test-classes'
-grails.project.test.reports.dir	= 'target/test-reports'
+grails.project.test.reports.dir = 'target/test-reports'
 
 String springSecurityVer = "3.0.7.RELEASE"
 
-grails.release.scm.enabled=false
+grails.release.scm.enabled = false
 grails.project.repos.default = "grailsCentral"
 
 grails.project.dependency.resolution = {
 
-	inherits('global') {
-		//excludes 'commons-codec' // Grails ships with 1.3, need 1.4
-	}
+    inherits('global') {
+        //excludes 'commons-codec' // Grails ships with 1.3, need 1.4
+    }
 
-	log 'warn'
+    log 'warn'
 
-	repositories {
-		grailsPlugins()
-		grailsHome()
-		grailsCentral()
+    repositories {
+        grailsPlugins()
+        grailsHome()
+        grailsCentral()
         mavenCentral()
 
-		ebr() // SpringSource  http://www.springsource.com/repository
-	}
+        ebr() // SpringSource  http://www.springsource.com/repository
+    }
 
-	dependencies {
-        runtime('org.springframework.security:spring-security-core:'+springSecurityVer) {
+    dependencies {
+        runtime('org.springframework.security:spring-security-core:' + springSecurityVer) {
             excludes 'com.springsource.javax.servlet',
-                     'com.springsource.org.aopalliance',
-                     'com.springsource.org.apache.commons.logging',
-                     'com.springsource.org.apache.xmlcommons',
-                     'org.springframework.aop',
-                     'org.springframework.beans',
-                     'org.springframework.context',
-                     'org.springframework.core',
-                     'org.springframework.web'
+                    'com.springsource.org.aopalliance',
+                    'com.springsource.org.apache.commons.logging',
+                    'com.springsource.org.apache.xmlcommons',
+                    'org.springframework.aop',
+                    'org.springframework.beans',
+                    'org.springframework.context',
+                    'org.springframework.core',
+                    'org.springframework.web'
 
         }
-        runtime('org.springframework.security:spring-security-web:'+springSecurityVer) {
+        runtime('org.springframework.security:spring-security-web:' + springSecurityVer) {
             excludes 'com.springsource.javax.servlet',
-                     'com.springsource.org.aopalliance',
-                     'com.springsource.org.apache.commons.logging',
-                     'com.springsource.org.apache.xmlcommons',
-                     'org.springframework.aop',
-                     'org.springframework.beans',
-                     'org.springframework.context',
-                     'org.springframework.core',
-                     'org.springframework.web'
+                    'com.springsource.org.aopalliance',
+                    'com.springsource.org.apache.commons.logging',
+                    'com.springsource.org.apache.xmlcommons',
+                    'org.springframework.aop',
+                    'org.springframework.beans',
+                    'org.springframework.context',
+                    'org.springframework.core',
+                    'org.springframework.web'
         }
 
-	}
+        runtime 'org.apache.httpcomponents:httpclient:4.2.1'
 
-  plugins {
-    //build ":release:2.0.0"
-  }
+    }
+
+    plugins {
+//        build(":release:2.0.0") {
+//            export = false
+//        }
+    }
 }

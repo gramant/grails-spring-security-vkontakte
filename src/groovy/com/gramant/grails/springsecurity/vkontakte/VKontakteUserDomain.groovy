@@ -1,6 +1,6 @@
-package com.the6hours.grails.springsecurity.facebook
+package com.gramant.grails.springsecurity.vkontakte
 
-public interface FacebookUserDomain {
+public interface VKontakteUserDomain {
 	
 	String getAccessToken();
 	void setAccessToken(String accessToken);

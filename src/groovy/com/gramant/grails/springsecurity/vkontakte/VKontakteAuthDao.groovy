@@ -1,12 +1,12 @@
-package com.the6hours.grails.springsecurity.facebook
+package com.gramant.grails.springsecurity.vkontakte
 
 import org.springframework.security.core.GrantedAuthority
 
-public interface FacebookAuthDao<F> {
+public interface VKontakteAuthDao<F> {
 
     /**
-     * Tries to load app user for Facebook user
-     * @param uid UID of Facebook user
+     * Tries to load app user for VKontakte user
+     * @param uid UID of VKontakte user
      * @return existing user, or null if there is no user for specified uid
      */
     F findUser(long uid)
@@ -16,7 +16,7 @@ public interface FacebookAuthDao<F> {
      * @param token information about current authnetication
      * @return just created user
      */
-    F create(FacebookAuthToken token)
+    F create(VKontakteAuthToken token)
 
     /**
      * Returns `principal` that will be stored into Security Context. It's good if it
@@ -46,12 +46,12 @@ public interface FacebookAuthDao<F> {
     Boolean hasValidToken(F user)
 
     /**
-    * Setup new Facebook Access Token for specified user
+    * Setup new VKontakte Access Token for specified user
     *
     * @param user target user
     * @param token valid access token
     */
-    void updateToken(F user, FacebookAuthToken token)
+    void updateToken(F user, VKontakteAuthToken token)
 
     /**
     *

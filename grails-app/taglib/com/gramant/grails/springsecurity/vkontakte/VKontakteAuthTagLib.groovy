@@ -115,11 +115,15 @@ class VKontakteAuthTagLib {
         redirectUri += (redirectUri.contains('&') ? '&' : '?')
         redirectUri += conf.filter.forceLoginParameter
         redirectUri += '=true'
-        String vkOauth = "http://oauth.vk.com/authorize?client_id=${conf.appId}&scope=SETTINGS&${permissions.join(',')}&redirect_uri=${redirectUri.encodeAsURL()}&response_type=code"
+
+        String responseType = attrs.responseType ?: 'code'
+
+        String vkOauth = "http://oauth.vk.com/authorize?client_id=${conf.appId}&scope=${permissions.join(',')}&redirect_uri=${redirectUri.encodeAsURL()}&response_type=${responseType}"
+        String onAuth = attrs.onAuth ?: "function(data) { window.location = \'${vkOauth}\'; }"
 
         out << """<div id="vk_auth"></div>
         <script type="text/javascript">
-        VK.Widgets.Auth("vk_auth", {width: "200px", onAuth: function(data) { window.location = '${vkOauth}'; }});
+        VK.Widgets.Auth("vk_auth", {width: "200px", onAuth: ${onAuth}});
         </script>
         """
 

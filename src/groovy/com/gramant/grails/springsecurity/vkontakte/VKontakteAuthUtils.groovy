@@ -121,7 +121,8 @@ class VKontakteAuthUtils {
             } else {
                 log.error("No access_token in response: $response")
             }
-            if (data.expires_in) {
+            // expires_in is 0 for offline_access
+            if (data.expires_in >= 0) {
                 token.expireAt = new Date(System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(data.expires_in as Long))
             } else {
                 log.error("No expires in response: $response")

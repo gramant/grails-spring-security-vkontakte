@@ -12,6 +12,7 @@ public class VKontakteAuthToken extends AbstractAuthenticationToken implements A
 	long uid
     VKontakteAccessToken accessToken
     String code
+    String redirectUri
 
     Object principal
 	

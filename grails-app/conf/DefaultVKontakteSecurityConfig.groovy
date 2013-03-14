@@ -16,6 +16,8 @@ security {
 
         jsconf = "vkSecurity"
 
+        permissions = [""]
+
         taglib {
             language = "en_US"
             button {
@@ -33,7 +35,8 @@ security {
 
         filter {
             processUrl = "/j_spring_vk_security_check"
-            type = 'transparent' //transparent or cookieDirect
+            redirectFromUrl = "/j_spring_security_vk_redirect"
+            type = 'redirect' //transparent, cookieDirect or redirect
             position = 730 //see SecurityFilterPosition
             forceLoginParameter = 'j_spring_vk_force'
         }

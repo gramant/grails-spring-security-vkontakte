@@ -9,6 +9,7 @@ class VKontakteAccessToken {
 
   String accessToken
   Date expireAt
+  long uid
 
   String toString() {
       StringBuilder buf = new StringBuilder()

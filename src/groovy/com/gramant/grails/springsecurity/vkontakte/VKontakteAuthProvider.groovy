@@ -34,22 +34,36 @@ public class VKontakteAuthProvider implements AuthenticationProvider, Initializi
     public Authentication authenticate(Authentication authentication) {
         VKontakteAuthToken token = authentication
 
-        def user = vkontakteAuthDao.findUser(token.uid as Long)
-        boolean justCreated = false
-
-
-        if (user == null) {
-
-            // If we don't have OAuth code, cannot authenticate.
+        if (token.uid <= 0) {
             if (!token.code) {
+                log.error("Token should contain 'code' to get used access_token and uid")
                 token.authenticated = false
                 return token
             }
 
+            VKontakteAccessToken accessToken = vkontakteAuthUtils.getAccessToken(token.code, token.redirectUri)
+            token.accessToken = accessToken
+            token.uid = accessToken.uid
+
+            if (token.accessToken == null) {
+                log.error("Can't fetch access_token for code '$token.code'")
+                token.authenticated = false
+                return token
+            }
+
+        }
+
+        def user = vkontakteAuthDao.findUser(token.uid as Long)
+        boolean justCreated = false
+
+        if (user == null) {
             //log.debug "New person $token.uid"
             if (createNew) {
-                log.info "Create new VKontakte user with uid $token.uid"
-                token.accessToken = vkontakteAuthUtils.getAccessToken(token.code)
+                log.info "Create new vkontakte user with uid $token.uid"
+                if (token.accessToken == null) {
+                    //untested
+                    token.accessToken = vkontakteAuthUtils.getAccessToken(token.code, token.redirectUri)
+                }
                 if (token.accessToken == null) {
                     log.error("Creating user w/o access_token")
                 }
@@ -59,55 +73,30 @@ public class VKontakteAuthProvider implements AuthenticationProvider, Initializi
                 log.error "User $token.uid not exists - not authenticated"
             }
         }
+
         if (user != null) {
-            if (!justCreated) {
-                if (!vkontakteAuthDao.hasValidToken(user)) {
-                    String currentAccessToken = vkontakteAuthDao.getAccessToken(user)
-                    VKontakteAccessToken freshToken = null
-                    if (currentAccessToken) {
-                        try {
-                            freshToken = vkontakteAuthUtils.refreshAccessToken(currentAccessToken)
-                            if (!freshToken) {
-                                log.warn("Can't refresh access token")
-                            }
-                        } catch (IOException e) {
-                            log.warn("Can't refresh access token")
-                        }
-                    }
+            if (!justCreated && !vkontakteAuthDao.hasValidToken(user)) {
 
-                    if (!freshToken) {
-                        freshToken =  vkontakteAuthUtils.getAccessToken(token.code)
-                    }
-
-                    if (freshToken) {
-                        if (freshToken.accessToken != currentAccessToken) {
-                            token.accessToken = freshToken
-                            vkontakteAuthDao.updateToken(user, token)
-                        } else {
-                            log.debug("User already have same access token")
-                        }
-                    }
-                } else {
-                    token.accessToken = new VKontakteAccessToken(accessToken: vkontakteAuthDao.getAccessToken(user))
-                }
+                vkontakteAuthDao.updateToken(user, token)
             }
 
-            assert token.accessToken?.accessToken
             UserDetails userDetails = createUserDetails(user, token.accessToken.accessToken)
 
             token.details = userDetails
             token.principal = vkontakteAuthDao.getPrincipal(user)
             token.authorities = userDetails.getAuthorities()
+            token.authenticated
         } else {
             token.authenticated = false
         }
+
         return token
     }
 
     public boolean supports(Class<? extends Object> authentication) {
         return VKontakteAuthToken.isAssignableFrom(authentication);
     }
-	
+
     protected UserDetails createUserDetails(Object vkUserUser, String secret) {
         if (vkontakteAuthService && vkontakteAuthService.respondsTo('createUserDetails', vkUserUser.class)) {
             return vkontakteAuthService.createUserDetails(vkUserUser)

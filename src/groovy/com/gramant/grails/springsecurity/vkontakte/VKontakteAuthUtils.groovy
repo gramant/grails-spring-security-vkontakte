@@ -20,9 +20,14 @@ class VKontakteAuthUtils {
 
     private static def log = Logger.getLogger(this)
 
+    private static Random RND = new Random()
+    private int seq = 0
+
     String apiKey
     String secret
     String applicationId
+
+    List<String> requiredPermissions = []
 
     VKontakteAuthToken build(String signedRequest) {
         if (!signedRequest) {
@@ -100,15 +105,17 @@ class VKontakteAuthUtils {
 
 
     // unsupported
+    //UNTESTED!!!!
     VKontakteAccessToken refreshAccessToken(String existingAccessToken) {
-        String authUrl = "https://oauth.vk.com/access_token?client_id=$applicationId&client_secret=$secret&grant_type=fb_exchange_token&fb_exchange_token=$existingAccessToken"
+        String authUrl = "https://oauth.vk.com/access_token?client_id=$applicationId&client_secret=$secret"
         return requestAccessToken(authUrl)
     }
 
-    VKontakteAccessToken getAccessToken(String code) {
-        String authUrl = "https://oauth.vk.com/access_token?client_id=$applicationId&client_secret=$secret&code=$code"
+    VKontakteAccessToken getAccessToken(String code, String redirect_uri) {
+        String authUrl = "https://oauth.vk.com/access_token?client_id=$applicationId&client_secret=$secret&code=$code&redirect_uri=$redirect_uri"
         return requestAccessToken(authUrl)
     }
+
 
     VKontakteAccessToken requestAccessToken(String authUrl) {
         try {
@@ -127,6 +134,13 @@ class VKontakteAuthUtils {
             } else {
                 log.error("No expires in response: $response")
             }
+            //user_id
+            if (data.user_id) {
+                token.uid = new Long(data.user_id)
+            } else {
+                log.error("No user_id in response: $response")
+            }
+
             log.debug("Got AccessToken: $token")
             return token
         } catch (IOException e) {
@@ -156,5 +170,23 @@ class VKontakteAuthUtils {
 //        }
         return payload.encodeAsMD5() == sign
 
+    }
+
+    String prepareRedirectUrl(String authPath, List scope = []) {
+        if (seq >= Integer.MAX_VALUE - 10000) {
+            seq = 0
+        }
+        Map data = [
+                client_id: applicationId,
+                redirect_uri:  authPath,
+                scope: scope.join(','),
+                response_type: 'code',
+                state: [seq++, RND.nextInt(1000000)].collect {Integer.toHexString(it)}.join('-')
+        ]
+        log.debug("Redirect to ${data.redirect_uri}")
+        String url = "https://oauth.vk.com/authorize?" + data.entrySet().collect {
+            [it.key, it.value].join('=')
+        }.join('&')
+        return url
     }
 }
